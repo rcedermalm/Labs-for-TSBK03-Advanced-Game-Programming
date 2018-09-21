@@ -130,17 +130,9 @@ void initBoneWeights(void)
 			}
 
 			// Visar vertexraderna
-						g_boneWeightVis[row][corner].s = row & 1; // Copy data to here to visualize your weights or anything else
-						g_boneWeightVis[row][corner].t = (row+1) & 1; // Copy data to here to visualize your weights
+						// g_boneWeightVis[row][corner].s = row & 1; // Copy data to here to visualize your weights or anything else
+						// g_boneWeightVis[row][corner].t = (row+1) & 1; // Copy data to here to visualize your weights
 		}
-
-	// corner = 0;
-	// for (row = 0; row < kMaxRow; row++)
-	// //		for (corner = 0; corner < kMaxCorners; corner++)
-	// for (bone = 0; bone < kMaxBones; bone++)
-	// {
-	// 	//				printf("%d %d %f\n", row, bone, g_boneWeights[row][corner][bone]);
-	// }
 
 }
 
@@ -245,26 +237,38 @@ void setupBones(void)
 // Desc:	deformera cylinder meshen enligt skelettet
 void DeformCylinder()
 {
-	//vec3 v[kMaxBones];
-
+	// Create the matrices Mi.
 	mat4 M[kMaxBones];
-
 	mat4 OldMboneprim = IdentityMatrix();
 	mat4 OldMboneInverse = IdentityMatrix();
-
-	// Create the matrices Mi.
 	mat4 MboneMult, Trest, Mbone, Mboneprim;
+
+	// Setup first matrix
+	Trest = T(g_bones[0].pos.x,	g_bones[0].pos.y,	g_bones[0].pos.z);
+	Mbone = Mult(Trest, g_bones[0].rot);
+	Mboneprim = Mult(Mbone, g_bonesRes[0].rot);
+
+	MboneMult = Mult(Mboneprim, InvertMat4(Mbone));
+	M[0] = Mult(OldMboneprim, Mult(MboneMult, OldMboneInverse));
+
+	OldMboneprim = Mboneprim;
+	OldMboneInverse = InvertMat4(Mbone);
+
+	// Create the rest of the matrices Mi
 	int i;
-	for(i = 0; i < kMaxBones; i++){
-		Trest = T(g_bones[i].pos.x, g_bones[i].pos.y, g_bones[i].pos.z);
+	for(i = 1; i < kMaxBones; i++){
+		Trest = T(g_bones[i].pos.x - g_bones[i-1].pos.x,
+						  g_bones[i].pos.y - g_bones[i-1].pos.y,
+							g_bones[i].pos.z - g_bones[i-1].pos.z);
+
 		Mbone = Mult(Trest, g_bones[i].rot);
 		Mboneprim = Mult(Mbone, g_bonesRes[i].rot);
 
 		MboneMult = Mult(Mboneprim, InvertMat4(Mbone));
 		M[i] = Mult(OldMboneprim, Mult(MboneMult, OldMboneInverse));
 
-		OldMboneprim = Mboneprim;
-		OldMboneInverse = InvertMat4(Mbone);
+		OldMboneprim = Mult(OldMboneprim, Mboneprim);
+		OldMboneInverse = Mult(InvertMat4(Mbone), OldMboneInverse);
 	}
 
 	//float w[kMaxBones];
@@ -277,22 +281,15 @@ void DeformCylinder()
 		for (corner = 0; corner < kMaxCorners; corner++)
 		{
 			// ---------=========  UPG 4 ===========---------
-			// TODO: skinna meshen mot alla benen.
-			//
-			// data som du kan anv�nda:
-			// g_bonesRes[].rot
-			// g_bones[].pos
-			// g_boneWeights
-			// g_vertsOrg
-			// g_vertsRes
+			// skinna meshen mot alla benen.
+
 			v = g_vertsOrg[row][corner];
 			sum = SetVector(0.0f, 0.0f, 0.0f);
 
-			for(bone = 0; bone < kMaxBones; bone++){
-				sum = VectorAdd(sum, ScalarMult(MultVec3(M[i], v), g_boneWeights[row][corner][bone]));
-			}
+			for(bone = 0; bone < kMaxBones; bone++)
+				sum = VectorAdd(sum, ScalarMult(MultVec3(M[bone], v), g_boneWeights[row][corner][bone]));
 
-			//g_vertsRes[row][corner] = sum;
+			g_vertsRes[row][corner] = sum;
 
 		}
 	}
