@@ -389,7 +389,7 @@ int main(int argc, char **argv)
 #endif
 	BuildCylinder();
 	setupBones();
-	g_shader = loadShaders("shader.vert" , "shader.frag");
+	g_shader = loadShaders("shader1.vert" , "shader1.frag");
 
 	glutMainLoop();
 	exit(0);
