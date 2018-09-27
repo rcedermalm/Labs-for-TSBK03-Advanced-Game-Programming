@@ -1,9 +1,9 @@
 // Laboration i spelfysik: Biljardbordet
-// Av Ingemar Ragnemalm 2010, baserad pŒ material av Tomas Szabo.
-// 2012: Ported to OpenGL 3.2 by Justina Mickonyt‘ and Ingemar R.
+// Av Ingemar Ragnemalm 2010, baserad pï¿½ material av Tomas Szabo.
+// 2012: Ported to OpenGL 3.2 by Justina Mickonytï¿½ and Ingemar R.
 // 2013: Adapted to VectorUtils3 and MicroGlut.
 
-// gcc lab3.c ../common/*.c -lGL -o lab3 -I../common 
+// gcc lab3.c ../common/*.c -lGL -o lab3 -I../common
 
 // Includes vary a bit with platforms.
 // MS Windows needs GLEW or glee.
@@ -103,7 +103,7 @@ Material ballMt = { { 1.0, 1.0, 1.0, 1.0 }, { 1.0, 1.0, 1.0, 0.0 },
                 };
 
 
-enum {kNumBalls = 16}; // Change as desired, max 16
+enum {kNumBalls = 8}; // Change as desired, max 16
 
 //------------------------------Globals---------------------------------
 ModelTexturePair tableAndLegs, tableSurf;
@@ -186,7 +186,31 @@ void updateWorld()
 	for (i = 0; i < kNumBalls; i++)
         for (j = i+1; j < kNumBalls; j++)
         {
-            // YOUR CODE HERE
+						vec3 collision_vec = VectorSub(ball[i].X, ball[j].X);
+						float ballDist = Norm(collision_vec) - 2*kBallSize;
+						if(ballDist <= 0.0) // Potential collision
+						{
+							// Update velocities
+							ball[i].v = ScalarMult(ball[i].P, 1.0/(ball[i].mass));
+							ball[j].v = ScalarMult(ball[j].P, 1.0/(ball[j].mass));
+							vec3 v_diff = VectorSub(ball[i].v, ball[j].v);
+
+							// Are they really on their way toward eachother?
+							if(DotProduct(collision_vec, v_diff) < 0.0) {
+								// Change elasticity here
+								float elasticity = 1.0;
+
+								// Calculate relative velocity
+								vec3 n = ScalarMult(Normalize(collision_vec), 1);
+								float v_rel = DotProduct(v_diff, n);
+
+								// Compute impulse and forces
+								float j_imp = (v_rel * -(elasticity + 1))/(1/ball[i].mass + 1/ball[j].mass);
+								vec3 Imp = ScalarMult(n, j_imp);
+								ball[i].F = VectorAdd(ball[i].F, ScalarMult(Imp, 1/deltaT));
+								ball[j].F = VectorAdd(ball[j].F, ScalarMult(Imp, -1/deltaT));
+							}
+						}
         }
 
 	// Control rotation here to reflect
@@ -196,9 +220,9 @@ void updateWorld()
             // YOUR CODE HERE
             // Exercise 1: Simple Rotation
             vec3 rotAxis = CrossProduct(SetVector(0,1,0), ball[i].v);
-            ball[i].R = ArbRotate(rotAxis, 3 * currentTime * Norm(ball[i].v));    
-            
-                
+						ball[i].R = Mult(ball[i].R, ArbRotate(rotAxis, 0.1 * Norm(ball[i].v)));
+
+
             // Exercise 3: Friction against the table
 	}
 
