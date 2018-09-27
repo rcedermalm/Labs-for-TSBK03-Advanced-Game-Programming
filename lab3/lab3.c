@@ -217,13 +217,37 @@ void updateWorld()
 	// friction against floor, simplified as well as more correct
 	for (i = 0; i < kNumBalls; i++)
 	{
-            // YOUR CODE HERE
-            // Exercise 1: Simple Rotation
-            vec3 rotAxis = CrossProduct(SetVector(0,1,0), ball[i].v);
-						ball[i].R = Mult(ball[i].R, ArbRotate(rotAxis, 0.1 * Norm(ball[i].v)));
+		  // YOUR CODE HERE
+		  // Exercise 1: Simple Rotation
+		  //vec3 rotAxis = CrossProduct(SetVector(0,1,0), ball[i].v);
+			//ball[i].R = Mult(ball[i].R, ArbRotate(rotAxis, 0.1 * Norm(ball[i].v)));
 
 
-            // Exercise 3: Friction against the table
+		  // Exercise 3: Friction against the table
+			int nr_weights = 7;
+			float weights[nr_weights] = {1.0/12.0, 1.0/12.0, 1.0/12.0, 0.5, 1.0/12.0, 1.0/12.0, 1.0/12.0};
+
+			mat3 I;
+			for (j = 0; j < nr_weights; j++)
+			{
+				float m = weights[j] * ball[i].mass;
+				float mrr = m * kBallSize*kBallSize;
+				float mrr2 = 2 * mrr;
+
+				I.m[0] = I.m[0] + mrr2;
+				I.m[1] = I.m[1] - mrr;
+				I.m[2] = I.m[2] - mrr;
+				I.m[3] = I.m[3] - mrr;
+				I.m[4] = I.m[4] + mrr2;
+				I.m[5] = I.m[5] - mrr;
+				I.m[6] = I.m[6] - mrr;
+				I.m[7] = I.m[7] - mrr;
+				I.m[8] = I.m[8] + mrr2;
+			}
+			ball[i].omega = MultMat3Vec3(InvertMat3(I), ball[i].L);
+
+
+
 	}
 
 // Update state, follows the book closely
@@ -338,6 +362,9 @@ void init()
 		ball[i].P = SetVector(((float)(i % 13))/ 50.0, 0.0, ((float)(i % 15))/50.0);
 		ball[i].R = IdentityMatrix();
 	}
+	// Exercise 2, testcase 2
+	// ball[0].mass = 5.0;
+
 	ball[0].X = SetVector(0, 0, 0);
 	ball[1].X = SetVector(0, 0, 0.5);
 	ball[2].X = SetVector(0.0, 0, 1.0);
