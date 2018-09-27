@@ -227,6 +227,7 @@ void updateWorld()
 			int nr_weights = 7;
 			float weights[nr_weights] = {1.0/12.0, 1.0/12.0, 1.0/12.0, 0.5, 1.0/12.0, 1.0/12.0, 1.0/12.0};
 
+/*		// DONT DO THIS; COMPUTE BY HAND
 			mat3 I;
 			for (j = 0; j < nr_weights; j++)
 			{
@@ -243,7 +244,7 @@ void updateWorld()
 				I.m[6] = I.m[6] - mrr;
 				I.m[7] = I.m[7] - mrr;
 				I.m[8] = I.m[8] + mrr2;
-			}
+			}*/
 			ball[i].omega = MultMat3Vec3(InvertMat3(I), ball[i].L);
 
 
