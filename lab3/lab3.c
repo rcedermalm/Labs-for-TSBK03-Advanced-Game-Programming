@@ -224,30 +224,20 @@ void updateWorld()
 
 
 		  // Exercise 3: Friction against the table
-			int nr_weights = 7;
-			float weights[nr_weights] = {1.0/12.0, 1.0/12.0, 1.0/12.0, 0.5, 1.0/12.0, 1.0/12.0, 1.0/12.0};
+			if(Norm(ball[i].v) > 0.001){
+				float friction_const = 0.005;
+				float friction_mag = 9.82 * ball[i].mass * friction_const;
+			//	printf("%f\n", friction_mag);
+			//	printVec3(ball[i].F);
 
-/*		// DONT DO THIS; COMPUTE BY HAND
-			mat3 I;
-			for (j = 0; j < nr_weights; j++)
-			{
-				float m = weights[j] * ball[i].mass;
-				float mrr = m * kBallSize*kBallSize;
-				float mrr2 = 2 * mrr;
+				vec3 F_friction = ScalarMult(Normalize(ball[i].v), friction_mag);
+				ball[i].F = VectorSub(ball[i].F, F_friction);
 
-				I.m[0] = I.m[0] + mrr2;
-				I.m[1] = I.m[1] - mrr;
-				I.m[2] = I.m[2] - mrr;
-				I.m[3] = I.m[3] - mrr;
-				I.m[4] = I.m[4] + mrr2;
-				I.m[5] = I.m[5] - mrr;
-				I.m[6] = I.m[6] - mrr;
-				I.m[7] = I.m[7] - mrr;
-				I.m[8] = I.m[8] + mrr2;
-			}*/
-			ball[i].omega = MultMat3Vec3(InvertMat3(I), ball[i].L);
-
-
+				// NOTE: IS THIS CORRECT????
+				vec3 r = SetVector(0.0, -kBallSize, 0.0); // Vector from center of mass to point of impact.
+				ball[i].T = CrossProduct(F_friction , r);
+				printVec3(ball[i].v);
+			}
 
 	}
 
@@ -257,9 +247,9 @@ void updateWorld()
 		vec3 dX, dP, dL, dO;
 		mat4 Rd;
 
-		// Note: omega is not set. How do you calculate it?
-		// YOUR CODE HERE
-
+		ball[i].omega =  ScalarMult(ball[i].L, 2*ball[i].mass*kBallSize*kBallSize);
+		//printVec3(ball[i].omega);
+		//printf("%f\n", 2/5*ball[i].mass*kBallSize*kBallSize);
 //		v := P * 1/mass
 		ball[i].v = ScalarMult(ball[i].P, 1.0/(ball[i].mass));
 //		X := X + v*dT
@@ -267,9 +257,13 @@ void updateWorld()
 		ball[i].X = VectorAdd(ball[i].X, dX); // X := X + dX
 //		R := R + Rd*dT
 		dO = ScalarMult(ball[i].omega, deltaT); // dO := omega*dT
+
+		//printVec3(dO);
+
 		Rd = CrossMatrix(dO); // Calc dO, add to R
 		Rd = Mult(Rd, ball[i].R); // Rotate the diff (NOTE: This was missing in early versions.)
 		ball[i].R = MatrixAdd(ball[i].R, Rd);
+
 //		P := P + F * dT
 		dP = ScalarMult(ball[i].F, deltaT); // dP := F*dT
 		ball[i].P = VectorAdd(ball[i].P, dP); // P := P + dP
