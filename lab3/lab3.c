@@ -225,18 +225,15 @@ void updateWorld()
 
 		  // Exercise 3: Friction against the table
 			if(Norm(ball[i].v) > 0.001){
-				float friction_const = 0.005;
+				float friction_const = 0.002;
 				float friction_mag = 9.82 * ball[i].mass * friction_const;
-			//	printf("%f\n", friction_mag);
-			//	printVec3(ball[i].F);
 
+				// NOTE: Friction is probably not working, what are we doing wrong?
 				vec3 F_friction = ScalarMult(Normalize(ball[i].v), friction_mag);
 				ball[i].F = VectorSub(ball[i].F, F_friction);
 
-				// NOTE: IS THIS CORRECT????
 				vec3 r = SetVector(0.0, -kBallSize, 0.0); // Vector from center of mass to point of impact.
 				ball[i].T = CrossProduct(F_friction , r);
-				printVec3(ball[i].v);
 			}
 
 	}
@@ -247,9 +244,10 @@ void updateWorld()
 		vec3 dX, dP, dL, dO;
 		mat4 Rd;
 
-		ball[i].omega =  ScalarMult(ball[i].L, 2*ball[i].mass*kBallSize*kBallSize);
-		//printVec3(ball[i].omega);
-		//printf("%f\n", 2/5*ball[i].mass*kBallSize*kBallSize);
+		// w = J_inv * L
+		float j_inv = 1/(4 * (ball[i].mass / 12) * kBallSize * kBallSize); // From inertia matrix
+		ball[i].omega =  ScalarMult(ball[i].L, j_inv);
+
 //		v := P * 1/mass
 		ball[i].v = ScalarMult(ball[i].P, 1.0/(ball[i].mass));
 //		X := X + v*dT
