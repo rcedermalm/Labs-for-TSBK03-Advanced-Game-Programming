@@ -103,7 +103,7 @@ Material ballMt = { { 1.0, 1.0, 1.0, 1.0 }, { 1.0, 1.0, 1.0, 0.0 },
                 };
 
 
-enum {kNumBalls = 8}; // Change as desired, max 16
+enum {kNumBalls = 16}; // Change as desired, max 16
 
 //------------------------------Globals---------------------------------
 ModelTexturePair tableAndLegs, tableSurf;
@@ -224,17 +224,16 @@ void updateWorld()
 
 
 		  // Exercise 3: Friction against the table
-			if(Norm(ball[i].v) > 0.001){
-				float friction_const = 0.002;
-				float friction_mag = 9.82 * ball[i].mass * friction_const;
+			float friction_const = 0.2;
 
-				// NOTE: Friction is probably not working, what are we doing wrong?
-				vec3 F_friction = ScalarMult(Normalize(ball[i].v), friction_mag);
-				ball[i].F = VectorSub(ball[i].F, F_friction);
+			vec3 r = SetVector(0.0, -kBallSize, 0.0); // Vector from center of mass to point of impact.
 
-				vec3 r = SetVector(0.0, -kBallSize, 0.0); // Vector from center of mass to point of impact.
-				ball[i].T = CrossProduct(F_friction , r);
-			}
+			// Velocity in point of impact, relative to the table
+			vec3 vSpin  = VectorAdd(CrossProduct(ball[i].omega, r), ball[i].v) ;
+
+			vec3 F_friction = ScalarMult(vSpin, friction_const);
+			ball[i].F = VectorSub(ball[i].F, F_friction);
+			ball[i].T = CrossProduct(F_friction , r);
 
 	}
 
@@ -255,8 +254,6 @@ void updateWorld()
 		ball[i].X = VectorAdd(ball[i].X, dX); // X := X + dX
 //		R := R + Rd*dT
 		dO = ScalarMult(ball[i].omega, deltaT); // dO := omega*dT
-
-		//printVec3(dO);
 
 		Rd = CrossMatrix(dO); // Calc dO, add to R
 		Rd = Mult(Rd, ball[i].R); // Rotate the diff (NOTE: This was missing in early versions.)
