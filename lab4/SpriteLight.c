@@ -42,7 +42,7 @@ TextureData *GetFace(char *fileName)
 	return fp;
 }
 
-struct SpriteRec *NewSprite(TextureData *f, GLfloat h, GLfloat v, GLfloat hs, GLfloat vs, bool busig)
+struct SpriteRec *NewSprite(TextureData *f, GLfloat h, GLfloat v, GLfloat hs, GLfloat vs, bool busig, bool food)
 {
 	SpritePtr sp;
 
@@ -58,6 +58,7 @@ struct SpriteRec *NewSprite(TextureData *f, GLfloat h, GLfloat v, GLfloat hs, GL
 	sp->face = f;
 	sp->rotation = 0;
 	sp->busig = busig;
+	sp->food = food;
 	return sp;
 }
 

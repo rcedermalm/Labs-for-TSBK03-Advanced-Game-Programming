@@ -28,8 +28,9 @@ typedef struct SpriteRec
 	struct SpriteRec *next;
 
 	// Add custom sprite data here as needed
-	FPoint speedDiff, avgPos, avoidanceVec;
+	FPoint speedDiff, avgPos, avoidanceVec, foodPullVec;
 	bool busig;
+	bool food;
 
 } SpriteRec, *SpritePtr;
 
@@ -40,7 +41,7 @@ extern long gWidth, gHeight;
 
 // Functions
 TextureData *GetFace(char *fileName);
-struct SpriteRec *NewSprite(TextureData *f, GLfloat h, GLfloat v, GLfloat hs, GLfloat vs, bool busig);
+struct SpriteRec *NewSprite(TextureData *f, GLfloat h, GLfloat v, GLfloat hs, GLfloat vs, bool busig, bool food);
 void HandleSprite(SpritePtr sp);
 void DrawSprite(SpritePtr sp);
 void DrawBackground();
